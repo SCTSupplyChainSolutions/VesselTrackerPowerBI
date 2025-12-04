@@ -15,7 +15,6 @@
     justify-content: center;
     align-items: center;
   }
-
   #radarChart {
     display: block;
   }
@@ -33,27 +32,42 @@ const dataPoints = [
   {"Category": "Sector Risk", "Value": 2}
 ];
 
+// Extract categories and values
 const categories = dataPoints.map(d => d.Category);
 const values = dataPoints.map(d => d.Value);
 categories.push(categories[0]);
 values.push(values[0]);
 
-const trace = {
+// Main radar trace
+const radarTrace = {
   type: 'scatterpolar',
   r: values,
   theta: categories,
   fill: 'toself',
   line: { color: '#ff7f0e' },
-  hoverinfo: 'skip'
+  hoverinfo: 'skip',
+  name: 'Risk'
+};
+
+// Invisible outer trace to leave space for labels
+const outerTrace = {
+  type: 'scatterpolar',
+  r: Array(values.length).fill(10), // max radius
+  theta: categories,
+  mode: 'lines',
+  line: { color: 'rgba(0,0,0,0)' }, // invisible
+  hoverinfo: 'skip',
+  showlegend: false
 };
 
 const layout = {
   polar: { 
     radialaxis: { visible: true, range: [0, 10], tickfont: { size: 12 } }, 
-    angularaxis: { tickfont: { size: 12 } }
+    angularaxis: { tickfont: { size: 12 } },
+    bgcolor: 'rgba(0,0,0,0)'
   },
   showlegend: false,
-  margin: { t: 0, b: 0, l: 0, r: 0 },
+  margin: { t: 20, b: 20, l: 20, r: 20 },
 };
 
 const config = { displayModeBar: false, responsive: true };
@@ -63,21 +77,17 @@ const chartDiv = document.getElementById('radarChart');
 function resizeChart() {
   const parentWidth = chartDiv.parentElement.clientWidth;
   const parentHeight = chartDiv.parentElement.clientHeight;
-
-  // leave 15% padding for labels around the circle
-  const size = Math.min(parentWidth, parentHeight) * 0.7; // 70% of container
-
+  const size = Math.min(parentWidth, parentHeight) * 0.95; // leave 5% padding around
   chartDiv.style.width = size + 'px';
   chartDiv.style.height = size + 'px';
-
   Plotly.Plots.resize(chartDiv);
 }
 
 // Initial render
-Plotly.newPlot(chartDiv, [trace], layout, config);
+Plotly.newPlot(chartDiv, [outerTrace, radarTrace], layout, config);
 resizeChart();
 
-// Resize dynamically when iframe or container resizes
+// Resize dynamically when iframe/container resizes
 window.addEventListener('resize', resizeChart);
 setInterval(resizeChart, 100);
 </script>
