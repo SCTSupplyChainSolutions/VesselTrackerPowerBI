@@ -1,35 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Risk Radar Chart</title>
+<meta charset="UTF-8">
+<title>Responsive Radar Chart</title>
 
 <style>
-    body {
-        background: white;
-        font-family: Arial, sans-serif;
+    html, body {
         margin: 0;
         padding: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
     }
-    canvas {
+
+    #radarCanvas {
+        width: 90vw;     /* responsive */
+        height: 90vh;    /* responsive */
+        max-width: 800px;
+        max-height: 800px;
         background: white;
     }
 </style>
 </head>
-
 <body>
 
-<canvas id="radar" width="700" height="700"></canvas>
+<canvas id="radarCanvas"></canvas>
 
 <script>
-// -----------------------------
-// INPUT DATA
-// -----------------------------
+// -------------------------------------------
+// INPUT DATA (0–100 SCALE)
+// -------------------------------------------
 const data = [
     { category: "Concentration Risk", value: 90 },
     { category: "Payment History", value: 80 },
@@ -38,37 +41,43 @@ const data = [
     { category: "Sector Diversity", value: 20 }
 ];
 
-const canvas = document.getElementById("radar");
-const ctx = canvas.getContext("2d");
-
-const W = canvas.width;
-const H = canvas.height;
-
-// -----------------------------
-// CHART SETTINGS
-// -----------------------------
-const centerX = W / 2;
-const centerY = H / 2 + 20;
-const maxRadius = 260;
-
-// Correct scale: 4 grid rings for 25/50/75/100
+const riskLabels = [25, 50, 75, 100];
 const rings = 4;
-const angleStep = (Math.PI * 2) / data.length;
 
-// -----------------------------
-// DRAW GRID RINGS + LABELS
-// -----------------------------
-function drawGrid() {
-    ctx.strokeStyle = "#cccccc";
+// -------------------------------------------
+// MAIN DRAW FUNCTION (RUNS ON RESIZE)
+// -------------------------------------------
+function drawRadar() {
+    const canvas = document.getElementById("radarCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Make canvas resolution match CSS size
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+
+    const W = canvas.width;
+    const H = canvas.height;
+
+    const centerX = W / 2;
+    const centerY = H / 2;
+    const maxRadius = Math.min(W, H) * 0.35; // responsive
+
+    const angleStep = (Math.PI * 2) / data.length;
+
+    ctx.clearRect(0, 0, W, H);
+
     ctx.lineWidth = 1;
-    ctx.font = "16px Arial";
-    ctx.fillStyle = "#555";
-    ctx.textAlign = "center";
+    ctx.strokeStyle = "#ddd";
+    ctx.fillStyle = "#000";
+    ctx.font = `${Math.round(W * 0.02)}px Montserrat`;
 
+    // -------------------------------------------
+    // Draw Rings + Risk Scale Labels (25/50/75/100)
+    // -------------------------------------------
     for (let i = 1; i <= rings; i++) {
         const radius = (maxRadius / rings) * i;
-        ctx.beginPath();
 
+        ctx.beginPath();
         for (let j = 0; j < data.length; j++) {
             const angle = -Math.PI / 2 + j * angleStep;
             const x = centerX + radius * Math.cos(angle);
@@ -76,59 +85,49 @@ function drawGrid() {
             if (j === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
-
         ctx.closePath();
         ctx.stroke();
 
-        // Correct labels: 25/50/75/100
-        const label = (i * 25).toString();
-        ctx.fillText(label, centerX, centerY - radius - 5);
+        // Risk label
+        ctx.fillText(riskLabels[i - 1], centerX, centerY - radius - 5);
     }
-}
 
-// -----------------------------
-// DRAW AXES + CATEGORY LABELS
-// -----------------------------
-function drawAxes() {
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#777";
-    ctx.font = "18px Arial";
-    ctx.fillStyle = "#000";
+    // -------------------------------------------
+    // Draw Axis Lines + Category Labels
+    // -------------------------------------------
+    ctx.strokeStyle = "#999";
+    ctx.lineWidth = 1;
 
     for (let i = 0; i < data.length; i++) {
         const angle = -Math.PI / 2 + i * angleStep;
-
         const x = centerX + maxRadius * Math.cos(angle);
         const y = centerY + maxRadius * Math.sin(angle);
 
-        // Axis
+        // Axis line
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.lineTo(x, y);
         ctx.stroke();
 
-        // Label position with margin
-        const lx = centerX + (maxRadius + 35) * Math.cos(angle);
-        const ly = centerY + (maxRadius + 35) * Math.sin(angle);
+        // Category labels (responsive spacing)
+        const lx = centerX + (maxRadius + W * 0.04) * Math.cos(angle);
+        const ly = centerY + (maxRadius + H * 0.04) * Math.sin(angle);
 
         ctx.textAlign = "center";
         ctx.fillText(data[i].category, lx, ly);
     }
-}
 
-// -----------------------------
-// DRAW DATA SHAPE
-// -----------------------------
-function drawData() {
-    ctx.strokeStyle = "#0077cc";
-    ctx.fillStyle = "rgba(0, 120, 255, 0.35)";
-    ctx.lineWidth = 3;
-
+    // -------------------------------------------
+    // Draw Data Polygon
+    // -------------------------------------------
     ctx.beginPath();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#ff7f0e";
+    ctx.fillStyle = "rgba(255,127,14,0.4)";
+
     data.forEach((p, i) => {
         const angle = -Math.PI / 2 + i * angleStep;
         const radius = (p.value / 100) * maxRadius;
-
         const x = centerX + radius * Math.cos(angle);
         const y = centerY + radius * Math.sin(angle);
 
@@ -141,13 +140,11 @@ function drawData() {
     ctx.stroke();
 }
 
-// -----------------------------
-// RENDER
-// -----------------------------
-drawGrid();
-drawAxes();
-drawData();
-
+// -------------------------------------------
+// INITIAL DRAW + SCALE EVENT
+// -------------------------------------------
+drawRadar();
+window.addEventListener("resize", drawRadar);
 </script>
 
 </body>
