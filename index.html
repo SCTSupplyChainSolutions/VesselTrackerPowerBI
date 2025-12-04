@@ -1,117 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SCT Vessel Tracker</title>
-  <script type="text/javascript">
-    function isValidIMO(imo) {
-      if (typeof imo !== "string") return false;
-      const trimmed = imo.trim().toLowerCase();
-      return trimmed !== "" && trimmed !== "null" && trimmed !== "undefined";
-    }
-
-    function updateVesselMap() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const imo = urlParams.get("imo");
-      const iframe = document.getElementById("vesselMap");
-
-      if (!iframe) return;
-
-      if (isValidIMO(imo)) {
-        iframe.src = "https://www.vesselfinder.com/aismap?imo=" + imo + "&v=1";
-      } else {
-        // Center over South Africa as fallback
-        iframe.src = "https://www.vesselfinder.com/aismap?lat=-29&lon=22.9375&zoom=5&v=1";
-      }
-
-      iframe.style.display = "block";
-    }
-
-    // Run immediately, ensures Power BI HTML Viewer picks up updated measure
-    updateVesselMap();
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: "Montserrat", sans-serif;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .top-bar {
-      width: 100%;
-      background-color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      box-sizing: border-box;
-      z-index: 10;
-      flex-shrink: 0;
-      border-bottom: 1px solid #ccc;
-    }
-
-    .top-bar .text-container {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .instructions {
-      font-size: 16px;
-      font-weight: 600;
-      color: #333;
-      margin: 0 0 10px 0;
-    }
-
-    .additionalInfo {
-      font-size: 14px;
-      font-weight: 400;
-      color: #666;
-      margin: 0;
-    }
-
-    .logoBox img {
-      width: 125px;
-      height: auto;
-    }
-
-    .iframe-container {
-      flex: 1;
-      width: 100%;
-      position: relative;
-    }
-
-    #vesselMap {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    @media (max-width: 768px) {
-      .instructions { font-size: 14px; }
-      .additionalInfo { font-size: 12px; }
-      .logoBox img { width: 100px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Radar Chart Example</title>
+    <!-- Include Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        #radarChart {
+            width: 100%;
+            max-width: 700px;
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
-  <div class="top-bar">
-    <div class="text-container">
-      <p class="instructions">Select your Client Ref and Corresponding IMO to Track Vessel</p>
-      <p class="additionalInfo">If Vessel not within Terrestrial AIS Range, tracking may be outdated, in which case search for vessel (IMO) on Marine Traffic</p>
-    </div>
-    <div class="logoBox">
-      <img src="https://github.com/SCTSupplyChainSolutions/VesselTracker/blob/main/SCT%20Logo.jpg?raw=true" alt="SCT Logo" />
-    </div>
-  </div>
+    <h2 style="text-align:center;">Risk Radar Chart</h2>
+    <div id="radarChart"></div>
 
-  <div class="iframe-container">
-    <iframe id="vesselMap" frameborder="0"></iframe>
-  </div>
+    <script>
+        // Data points
+        const dataPoints = [
+            {"Category": "Payment History", "Value": 8},
+            {"Category": "Deposit Coverage", "Value": 5},
+            {"Category": "Concentration Risk", "Value": 9},
+            {"Category": "Margin Quality", "Value": 8},
+            {"Category": "Sector Risk", "Value": 2}
+        ];
+
+        // Extract labels and values
+        const categories = dataPoints.map(d => d.Category);
+        const values = dataPoints.map(d => d.Value);
+
+        // Close the radar chart loop
+        categories.push(categories[0]);
+        values.push(values[0]);
+
+        const trace = {
+            type: 'scatterpolar',
+            r: values,
+            theta: categories,
+            fill: 'toself',
+            name: 'Risk Profile',
+            line: {
+                color: '#1f77b4'
+            }
+        };
+
+        const layout = {
+            polar: {
+                radialaxis: {
+                    visible: true,
+                    range: [0, 10]  // scale from 0 to 10
+                }
+            },
+            showlegend: false,
+            margin: { t: 50, b: 50, l: 50, r: 50 }
+        };
+
+        Plotly.newPlot('radarChart', [trace], layout, {responsive: true});
+    </script>
 </body>
 </html>
