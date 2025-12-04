@@ -17,8 +17,8 @@
     }
 
     #radarCanvas {
-        width: 90vw;     /* responsive */
-        height: 90vh;    /* responsive */
+        width: 90vw;
+        height: 90vh;
         max-width: 800px;
         max-height: 800px;
         background: white;
@@ -30,28 +30,29 @@
 <canvas id="radarCanvas"></canvas>
 
 <script>
-// -------------------------------------------
-// INPUT DATA (0–100 SCALE)
-// -------------------------------------------
+// ---------------------------------------------------------
+// INPUT DATA (Now correctly mapped to 0–100)
+// ---------------------------------------------------------
 const data = [
     { category: "Concentration Risk", value: 90 },
     { category: "Payment History", value: 80 },
-    { category: "Deposit Coverage", value: 50 },
+    { category: "Sector Diversity", value: 20 },
     { category: "Margin Quality", value: 80 },
-    { category: "Sector Diversity", value: 20 }
+    { category: "Deposit Coverage", value: 50 }
 ];
 
-const riskLabels = [25, 50, 75, 100];
-const rings = 4;
+// Correct full ring labels INCLUDING ZERO
+const riskLabels = [0, 25, 50, 75, 100];
+const rings = 5; // now 5 rings so labels map correctly
 
-// -------------------------------------------
-// MAIN DRAW FUNCTION (RUNS ON RESIZE)
-// -------------------------------------------
+// ---------------------------------------------------------
+// DRAW FUNCTION (Executed on load AND on resize)
+// ---------------------------------------------------------
 function drawRadar() {
     const canvas = document.getElementById("radarCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Make canvas resolution match CSS size
+    // Make canvas resolution match CSS size (critical for scaling)
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
 
@@ -60,41 +61,46 @@ function drawRadar() {
 
     const centerX = W / 2;
     const centerY = H / 2;
-    const maxRadius = Math.min(W, H) * 0.35; // responsive
+
+    // Perfect pentagon scaling — no stretching
+    const maxRadius = Math.min(W, H) * 0.35;
 
     const angleStep = (Math.PI * 2) / data.length;
 
     ctx.clearRect(0, 0, W, H);
 
+    // Base styles
     ctx.lineWidth = 1;
     ctx.strokeStyle = "#ddd";
     ctx.fillStyle = "#000";
     ctx.font = `${Math.round(W * 0.02)}px Montserrat`;
 
-    // -------------------------------------------
-    // Draw Rings + Risk Scale Labels (25/50/75/100)
-    // -------------------------------------------
-    for (let i = 1; i <= rings; i++) {
-        const radius = (maxRadius / rings) * i;
+    // ---------------------------------------------------------
+    // DRAW RINGS + RISK LABELS
+    // ---------------------------------------------------------
+    for (let i = 0; i < rings; i++) {
+        const radius = (maxRadius / (rings - 1)) * i;
 
         ctx.beginPath();
         for (let j = 0; j < data.length; j++) {
             const angle = -Math.PI / 2 + j * angleStep;
             const x = centerX + radius * Math.cos(angle);
             const y = centerY + radius * Math.sin(angle);
+
             if (j === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
         ctx.closePath();
         ctx.stroke();
 
-        // Risk label
-        ctx.fillText(riskLabels[i - 1], centerX, centerY - radius - 5);
+        // Label centered on vertical top axis
+        ctx.textAlign = "center";
+        ctx.fillText(riskLabels[i], centerX, centerY - radius - 5);
     }
 
-    // -------------------------------------------
-    // Draw Axis Lines + Category Labels
-    // -------------------------------------------
+    // ---------------------------------------------------------
+    // DRAW AXES + CATEGORY LABELS
+    // ---------------------------------------------------------
     ctx.strokeStyle = "#999";
     ctx.lineWidth = 1;
 
@@ -103,23 +109,23 @@ function drawRadar() {
         const x = centerX + maxRadius * Math.cos(angle);
         const y = centerY + maxRadius * Math.sin(angle);
 
-        // Axis line
+        // Axis lines
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.lineTo(x, y);
         ctx.stroke();
 
-        // Category labels (responsive spacing)
-        const lx = centerX + (maxRadius + W * 0.04) * Math.cos(angle);
-        const ly = centerY + (maxRadius + H * 0.04) * Math.sin(angle);
+        // Category labels
+        const lx = centerX + (maxRadius + W * 0.045) * Math.cos(angle);
+        const ly = centerY + (maxRadius + H * 0.045) * Math.sin(angle);
 
         ctx.textAlign = "center";
         ctx.fillText(data[i].category, lx, ly);
     }
 
-    // -------------------------------------------
-    // Draw Data Polygon
-    // -------------------------------------------
+    // ---------------------------------------------------------
+    // DRAW DATA POLYGON
+    // ---------------------------------------------------------
     ctx.beginPath();
     ctx.lineWidth = 3;
     ctx.strokeStyle = "#ff7f0e";
@@ -128,6 +134,7 @@ function drawRadar() {
     data.forEach((p, i) => {
         const angle = -Math.PI / 2 + i * angleStep;
         const radius = (p.value / 100) * maxRadius;
+
         const x = centerX + radius * Math.cos(angle);
         const y = centerY + radius * Math.sin(angle);
 
@@ -140,9 +147,9 @@ function drawRadar() {
     ctx.stroke();
 }
 
-// -------------------------------------------
-// INITIAL DRAW + SCALE EVENT
-// -------------------------------------------
+// ---------------------------------------------------------
+// INITIAL DRAW + RESPONSIVE REDRAW
+// ---------------------------------------------------------
 drawRadar();
 window.addEventListener("resize", drawRadar);
 </script>
