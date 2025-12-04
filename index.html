@@ -9,19 +9,32 @@
     padding: 0;
     width: 100%;
     height: 100%;
-    font-family: 'Montserrat', sans-serif;
     background-color: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  #radarChart {
+
+  #radarWrapper {
     width: 100%;
     height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #radarChart {
+    width: 90%;
+    height: 0;
+    padding-bottom: 90%; /* keeps square aspect ratio */
   }
 </style>
 </head>
 <body>
-<div id="radarChart"></div>
+<div id="radarWrapper">
+  <div id="radarChart"></div>
+</div>
 <script>
-  // Data points
   const dataPoints = [
     {"Category": "Payment History", "Value": 8},
     {"Category": "Deposit Coverage", "Value": 5},
@@ -32,8 +45,6 @@
 
   const categories = dataPoints.map(d => d.Category);
   const values = dataPoints.map(d => d.Value);
-
-  // Close the radar chart loop
   categories.push(categories[0]);
   values.push(values[0]);
 
@@ -42,30 +53,20 @@
     r: values,
     theta: categories,
     fill: 'toself',
-    line: { color: '#ff7f0e' }, // orange
-    hoverinfo: 'skip' // remove tooltips
+    line: { color: '#ff7f0e' },
+    hoverinfo: 'skip'
   };
 
   const layout = {
-    autosize: true,
-    polar: {
-      radialaxis: {
-        visible: true,
-        range: [0, 10]
-      }
-    },
+    polar: { radialaxis: { visible: true, range: [0,10] } },
     showlegend: false,
-    margin: { t: 50, b: 50, l: 50, r: 50 }, // padding for labels
+    margin: { t: 20, b: 20, l: 20, r: 20 },
   };
 
-  const config = {
-    displayModeBar: false,
-    responsive: true
-  };
+  const config = { displayModeBar: false, responsive: true };
 
   Plotly.newPlot('radarChart', [trace], layout, config);
 
-  // Resize dynamically on iframe/container resize
   window.addEventListener('resize', () => {
     Plotly.Plots.resize('radarChart');
   });
