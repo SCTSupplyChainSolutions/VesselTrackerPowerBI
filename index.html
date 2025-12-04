@@ -24,106 +24,99 @@ html, body {
 <body>
 <div id="radarChart"></div>
 <script>
-// Data points
-const dataPoints = [
-  {Category: "Concentration Risk", Value: 9},
-  {Category: "Payment History", Value: 8},
-  {Category: "Sector Diversity", Value: 2},
-  {Category: "Margin Quality", Value: 8},
-  {Category: "Deposit Coverage", Value: 5}
+// ----- CONFIG -----
+const categories = [
+  "Concentration Risk", 
+  "Payment History", 
+  "Sector Diversity", 
+  "Margin Quality", 
+  "Deposit Coverage"
 ];
 
-// Assign fixed angles for upright pentagon
-const angles = [
-  90,    // Concentration Risk top
-  18,    // Payment History top-right
-  306,   // Sector Diversity bottom-right
-  234,   // Margin Quality bottom-left
-  162    // Deposit Coverage top-left
-].map(a => a * Math.PI / 180);
+const values = [9, 8, 2, 8, 5]; // your data values (0-10)
+const N = categories.length;
+const maxValue = 10; // max scale
+const levels = 5; // number of concentric pentagons for scale
 
-// Normalize values to max radius = 1
-const maxRadius = 1;
-const values = dataPoints.map(d => d.Value / 10 * maxRadius);
+// ----- HELPER FUNCTIONS -----
+function pentagonCoords(radius) {
+  return Array.from({length: N}, (_, i) => {
+    const angle = Math.PI/2 - (2 * Math.PI * i / N); // upright pentagon
+    return [radius * Math.cos(angle), radius * Math.sin(angle)];
+  });
+}
 
-// Radar polygon coordinates
-const xs = values.map((v,i) => v * Math.cos(angles[i]));
-const ys = values.map((v,i) => v * Math.sin(angles[i]));
-xs.push(xs[0]); ys.push(ys[0]);
+// Convert data values to coordinates
+const dataCoords = pentagonCoords(1).map((coord, i) => {
+  const scale = values[i]/maxValue;
+  return [coord[0]*scale, coord[1]*scale];
+});
+dataCoords.push(dataCoords[0]); // close polygon
 
-// Label positions slightly outside vertices
-const labelXs = values.map((v,i) => 1.08 * Math.cos(angles[i]));
-const labelYs = values.map((v,i) => 1.08 * Math.sin(angles[i]));
-const labels = dataPoints.map(d => d.Category);
+// ----- TRACES -----
 
-// Radar polygon trace
-const radarTrace = {
-  x: xs,
-  y: ys,
+// Concentric pentagons (scale)
+const scaleTraces = [];
+for(let l=1;l<=levels;l++){
+  const r = l/levels;
+  const coords = pentagonCoords(r);
+  coords.push(coords[0]);
+  scaleTraces.push({
+    x: coords.map(c => c[0]),
+    y: coords.map(c => c[1]),
+    type: 'scatter',
+    mode: 'lines',
+    line: { color: '#ddd', width: 1 },
+    hoverinfo: 'skip',
+    showlegend: false
+  });
+}
+
+// Data overlay
+const dataTrace = {
+  x: dataCoords.map(c => c[0]),
+  y: dataCoords.map(c => c[1]),
   fill: 'toself',
   fillcolor: 'rgba(255,127,14,0.5)',
   line: { color: '#ff7f0e', width: 2 },
   type: 'scatter',
+  mode: 'lines+markers',
+  marker: { size: 6, color: '#ff7f0e' },
   hoverinfo: 'skip'
 };
 
-// Labels trace
+// Labels at vertices
+const labelCoords = pentagonCoords(1.1); // slightly outside
 const labelTrace = {
-  x: labelXs,
-  y: labelYs,
-  text: labels,
+  x: labelCoords.map(c => c[0]),
+  y: labelCoords.map(c => c[1]),
+  text: categories,
   mode: 'text',
   textfont: { size: 14, color: '#333' },
   hoverinfo: 'skip',
   type: 'scatter'
 };
 
-// Vertical scale trace (Concentration Risk axis)
-const scaleTrace = {
-  x: [0, 0],
-  y: [0, maxRadius],
-  mode: 'lines+text',
-  line: { color: '#999', width: 1, dash: 'dot' },
-  text: ['0','2','4','6','8','10'],
-  textposition: 'middle right',
-  textfont: { size: 12, color: '#555' },
-  type: 'scatter'
-};
-
-// Add small tick lines along the vertical axis
-const tickTraces = [];
-for(let i=1;i<=10;i+=2){
-  tickTraces.push({
-    x: [-0.02, 0.02],
-    y: [i/10*maxRadius, i/10*maxRadius],
-    mode: 'lines+text',
-    line: { color:'#999', width:1 },
-    text: [i],
-    textposition: 'middle right',
-    textfont: { size: 12, color: '#555' },
-    type: 'scatter'
-  });
-}
-
+// ----- LAYOUT -----
 const layout = {
   xaxis: { visible: false, range: [-1.3,1.3] },
   yaxis: { visible: false, range: [-1.3,1.3] },
-  margin: { t: 30, b: 30, l: 60, r: 60 }, // leave space for labels
-  autosize: true,
+  margin: { t: 30, b: 30, l: 50, r: 50 },
   plot_bgcolor: 'rgba(0,0,0,0)',
   paper_bgcolor: 'rgba(0,0,0,0)',
-  showlegend: false
+  showlegend: false,
+  autosize: true
 };
 
+// ----- PLOT -----
 const config = { displayModeBar: false, responsive: true };
 const chartDiv = document.getElementById('radarChart');
 
-function resizeChart() {
+function resizeChart(){
   Plotly.Plots.resize(chartDiv);
 }
 
-// Initial render
-Plotly.newPlot(chartDiv, [radarTrace, labelTrace, scaleTrace, ...tickTraces], layout, config);
+Plotly.newPlot(chartDiv, [...scaleTraces, dataTrace, labelTrace], layout, config);
 window.addEventListener('resize', resizeChart);
 setInterval(resizeChart, 100);
 </script>
