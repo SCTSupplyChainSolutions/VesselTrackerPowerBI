@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>Responsive High-Quality Radar Chart</title>
+<!-- Google Fonts fallback for Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
 <style>
 html, body {
     margin: 0;
@@ -24,6 +26,7 @@ html, body {
 <body>
 <canvas id="radarCanvas"></canvas>
 <script>
+// ----- CONFIG -----
 const data = [
     { category: "Concentration Risk", value: 90 },
     { category: "Payment History", value: 80 },
@@ -35,12 +38,12 @@ const riskLabels = [0, 25, 50, 75, 100];
 const rings = 5;
 const animationSteps = 60;
 
-// DRAW FUNCTION
+// ----- DRAW FUNCTION -----
 function drawRadar(step = animationSteps) {
     const canvas = document.getElementById("radarCanvas");
     const ctx = canvas.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
-    
+
     // High-DPI scaling
     canvas.width = canvas.clientWidth * dpr;
     canvas.height = canvas.clientHeight * dpr;
@@ -49,20 +52,26 @@ function drawRadar(step = animationSteps) {
     const W = canvas.width / dpr;
     const H = canvas.height / dpr;
     const centerX = W / 2;
-    const centerY = H / 2; // keep radar centered
+    const centerY = H / 1.8;
     const maxRadius = Math.min(W, H) * 0.35;
     const angleStep = (Math.PI * 2) / data.length;
 
-    ctx.clearRect(0, 0, W, H); // clear first
+    // Clear canvas first
+    ctx.clearRect(0, 0, W, H);
 
-    // --- Top-left label ---
+    // ----- TOP-LEFT LABEL -----
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.font = `${Math.round(W * 0.03)}px Inter`;
+    ctx.font = `${Math.round(Math.min(W,H) * 0.03)}px Inter`;
     ctx.fillStyle = "#333";
     ctx.fillText("Risk Assessment", 10, 10);
 
-    // DRAW RINGS
+    // ----- DRAW RINGS + RISK LABELS -----
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#ddd";
+    ctx.fillStyle = "#000";
+    ctx.font = `${Math.round(Math.min(W,H) * 0.02)}px Inter`;
+
     for (let i = 0; i < rings; i++) {
         const radius = (maxRadius / (rings - 1)) * i;
         ctx.beginPath();
@@ -76,33 +85,39 @@ function drawRadar(step = animationSteps) {
         ctx.closePath();
         ctx.stroke();
 
+        // Risk label
         ctx.textAlign = "center";
         ctx.fillText(riskLabels[i], centerX, centerY - radius - 5);
     }
 
-    // AXES & CATEGORY LABELS
+    // ----- AXES + CATEGORY LABELS -----
     ctx.strokeStyle = "#999";
     ctx.lineWidth = 1;
     for (let i = 0; i < data.length; i++) {
         const angle = -Math.PI / 2 + i * angleStep;
         const x = centerX + maxRadius * Math.cos(angle);
         const y = centerY + maxRadius * Math.sin(angle);
+
+        // Axis line
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.lineTo(x, y);
         ctx.stroke();
 
+        // Category label
         const lx = centerX + (maxRadius + W * 0.045) * Math.cos(angle);
         const ly = centerY + (maxRadius + H * 0.045) * Math.sin(angle);
         ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.fillText(data[i].category, lx, ly);
     }
 
-    // DATA POLYGON WITH ANIMATION
+    // ----- DATA POLYGON WITH ANIMATION -----
     ctx.beginPath();
     ctx.lineWidth = 3;
     ctx.strokeStyle = "#ff7f0e";
     ctx.fillStyle = "rgba(255,127,14,0.4)";
+
     data.forEach((p, i) => {
         const angle = -Math.PI / 2 + i * angleStep;
         const radius = (p.value / 100) * maxRadius * (step / animationSteps);
@@ -111,12 +126,13 @@ function drawRadar(step = animationSteps) {
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
     });
+
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 }
 
-// ANIMATION LOOP
+// ----- ANIMATION LOOP -----
 let currentStep = 0;
 function animate() {
     drawRadar(currentStep);
@@ -126,7 +142,7 @@ function animate() {
     }
 }
 
-// INITIAL DRAW & RESIZE HANDLER
+// INITIAL DRAW + RESIZE HANDLER
 animate();
 window.addEventListener("resize", () => { currentStep = 0; animate(); });
 </script>
