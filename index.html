@@ -1,69 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Radar Chart Example</title>
-    <!-- Include Plotly.js -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        #radarChart {
-            width: 100%;
-            max-width: 700px;
-            margin: auto;
-        }
-    </style>
+<meta charset="UTF-8">
+<!-- Include Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f9f9f9;
+  }
+  #radarChart {
+    width: 100%;
+    height: 100%;
+  }
+</style>
 </head>
 <body>
-    <h2 style="text-align:center;">Risk Radar Chart</h2>
-    <div id="radarChart"></div>
+<div id="radarChart"></div>
+<script>
+  // Data points
+  const dataPoints = [
+    {"Category": "Payment History", "Value": 8},
+    {"Category": "Deposit Coverage", "Value": 5},
+    {"Category": "Concentration Risk", "Value": 9},
+    {"Category": "Margin Quality", "Value": 8},
+    {"Category": "Sector Risk", "Value": 2}
+  ];
 
-    <script>
-        // Data points
-        const dataPoints = [
-            {"Category": "Payment History", "Value": 8},
-            {"Category": "Deposit Coverage", "Value": 5},
-            {"Category": "Concentration Risk", "Value": 9},
-            {"Category": "Margin Quality", "Value": 8},
-            {"Category": "Sector Risk", "Value": 2}
-        ];
+  // Extract labels and values
+  const categories = dataPoints.map(d => d.Category);
+  const values = dataPoints.map(d => d.Value);
 
-        // Extract labels and values
-        const categories = dataPoints.map(d => d.Category);
-        const values = dataPoints.map(d => d.Value);
+  // Close the radar chart loop
+  categories.push(categories[0]);
+  values.push(values[0]);
 
-        // Close the radar chart loop
-        categories.push(categories[0]);
-        values.push(values[0]);
+  const trace = {
+    type: 'scatterpolar',
+    r: values,
+    theta: categories,
+    fill: 'toself',
+    line: { color: '#ff7f0e' }, // orange line
+    hoverinfo: 'skip' // removes tooltips
+  };
 
-        const trace = {
-            type: 'scatterpolar',
-            r: values,
-            theta: categories,
-            fill: 'toself',
-            name: 'Risk Profile',
-            line: {
-                color: '#1f77b4'
-            }
-        };
+  const layout = {
+    polar: {
+      radialaxis: {
+        visible: true,
+        range: [0, 10]
+      }
+    },
+    showlegend: false,
+    margin: { t: 0, b: 0, l: 0, r: 0 },
+  };
 
-        const layout = {
-            polar: {
-                radialaxis: {
-                    visible: true,
-                    range: [0, 10]  // scale from 0 to 10
-                }
-            },
-            showlegend: false,
-            margin: { t: 50, b: 50, l: 50, r: 50 }
-        };
+  const config = {
+    displayModeBar: false, // removes toolbar
+    responsive: true
+  };
 
-        Plotly.newPlot('radarChart', [trace], layout, {responsive: true});
-    </script>
+  Plotly.newPlot('radarChart', [trace], layout, config);
+</script>
 </body>
 </html>
