@@ -18,10 +18,6 @@
 
   #radarChart {
     display: block;
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
   }
 </style>
 </head>
@@ -57,7 +53,7 @@ const layout = {
     angularaxis: { tickfont: { size: 12 } }
   },
   showlegend: false,
-  margin: { t: 20, b: 20, l: 20, r: 20 } // minimal padding for labels
+  margin: { t: 0, b: 0, l: 0, r: 0 },
 };
 
 const config = { displayModeBar: false, responsive: true };
@@ -68,8 +64,8 @@ function resizeChart() {
   const parentWidth = chartDiv.parentElement.clientWidth;
   const parentHeight = chartDiv.parentElement.clientHeight;
 
-  // Use 90% of the smaller dimension to leave space for labels
-  const size = Math.min(parentWidth, parentHeight) * 0.9;
+  // leave 15% padding for labels around the circle
+  const size = Math.min(parentWidth, parentHeight) * 0.7; // 70% of container
 
   chartDiv.style.width = size + 'px';
   chartDiv.style.height = size + 'px';
@@ -83,8 +79,6 @@ resizeChart();
 
 // Resize dynamically when iframe or container resizes
 window.addEventListener('resize', resizeChart);
-
-// Optional: extra interval to handle Metabase dynamic resizing
 setInterval(resizeChart, 100);
 </script>
 </body>
