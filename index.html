@@ -30,7 +30,6 @@
     {"Category": "Sector Risk", "Value": 2}
   ];
 
-  // Extract labels and values
   const categories = dataPoints.map(d => d.Category);
   const values = dataPoints.map(d => d.Value);
 
@@ -44,10 +43,11 @@
     theta: categories,
     fill: 'toself',
     line: { color: '#ff7f0e' }, // orange
-    hoverinfo: 'skip' // disable tooltips
+    hoverinfo: 'skip' // remove tooltips
   };
 
   const layout = {
+    autosize: true,
     polar: {
       radialaxis: {
         visible: true,
@@ -55,17 +55,17 @@
       }
     },
     showlegend: false,
-    margin: { t: 0, b: 0, l: 0, r: 0 },
+    margin: { t: 50, b: 50, l: 50, r: 50 }, // padding for labels
   };
 
   const config = {
     displayModeBar: false,
-    responsive: true // scales automatically with container / iframe
+    responsive: true
   };
 
   Plotly.newPlot('radarChart', [trace], layout, config);
 
-  // Optional: resize dynamically if parent iframe changes size
+  // Resize dynamically on iframe/container resize
   window.addEventListener('resize', () => {
     Plotly.Plots.resize('radarChart');
   });
