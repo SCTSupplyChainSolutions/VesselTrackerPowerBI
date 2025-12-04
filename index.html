@@ -9,11 +9,11 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  background-color: #f9f9f9;
   font-family: 'Montserrat', sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #f9f9f9;
 }
 #radarChart {
   width: 100%;
@@ -32,53 +32,45 @@ const dataPoints = [
   {"Category": "Sector Risk", "Value": 2}
 ];
 
-// Convert data to X/Y coordinates for a polygon
-const N = dataPoints.length;
-const radiusScale = 1; // max radius
-const values = dataPoints.map(d => d.Value / 10 * radiusScale);
-const angles = dataPoints.map((d,i) => 2 * Math.PI * i / N);
+const categories = dataPoints.map(d => d.Category);
+const values = dataPoints.map(d => d.Value);
 
-const xs = values.map((v,i) => v * Math.cos(angles[i]));
-const ys = values.map((v,i) => v * Math.sin(angles[i]));
-// Close polygon
-xs.push(xs[0]);
-ys.push(ys[0]);
+// Close the loop for radar chart
+const radarValues = [...values, values[0]];
+const radarCategories = [...categories, categories[0]];
 
-// Labels inside chart
-const labelXs = values.map((v,i) => 1.05 * Math.cos(angles[i]));
-const labelYs = values.map((v,i) => 1.05 * Math.sin(angles[i]));
-const labels = dataPoints.map(d => d.Category);
-
-// Radar polygon trace
-const trace = {
-  x: xs,
-  y: ys,
+// Radar data overlay
+const radarTrace = {
+  type: 'scatterpolar',
+  r: radarValues,
+  theta: radarCategories,
   fill: 'toself',
-  fillcolor: 'rgba(255,127,14,0.5)',
   line: { color: '#ff7f0e', width: 2 },
   hoverinfo: 'skip',
-  type: 'scatter'
+  name: 'Risk'
 };
 
-// Labels trace
+// Labels inside chart
 const labelTrace = {
-  x: labelXs,
-  y: labelYs,
+  type: 'scatterpolar',
+  r: values.map(v => v + 1), // slightly outside data points
+  theta: categories,
   mode: 'text',
-  text: labels,
+  text: categories,
   textposition: 'middle center',
-  textfont: { size: 14, color: '#333' },
+  textfont: { size: 12, color: '#333' },
   hoverinfo: 'skip',
-  type: 'scatter'
+  showlegend: false
 };
 
 const layout = {
-  xaxis: { visible: false, range: [-1.2, 1.2] },
-  yaxis: { visible: false, range: [-1.2, 1.2] },
-  margin: { t: 10, b: 10, l: 10, r: 10 },
-  autosize: true,
-  plot_bgcolor: 'rgba(0,0,0,0)',
-  paper_bgcolor: 'rgba(0,0,0,0)'
+  polar: {
+    radialaxis: { visible: false, range: [0, 10] },  // hide circles
+    angularaxis: { showticklabels: false },          // hide default labels
+    bgcolor: 'rgba(0,0,0,0)'
+  },
+  showlegend: false,
+  margin: { t: 20, b: 20, l: 20, r: 20 }
 };
 
 const config = { displayModeBar: false, responsive: true };
@@ -89,7 +81,7 @@ function resizeChart() {
 }
 
 // Initial render
-Plotly.newPlot(chartDiv, [trace, labelTrace], layout, config);
+Plotly.newPlot(chartDiv, [radarTrace, labelTrace], layout, config);
 window.addEventListener('resize', resizeChart);
 setInterval(resizeChart, 100);
 </script>
