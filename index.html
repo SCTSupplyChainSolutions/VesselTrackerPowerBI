@@ -25,52 +25,63 @@ html, body {
 <div id="radarChart"></div>
 <script>
 const dataPoints = [
-  {"Category": "Payment History", "Value": 8},
-  {"Category": "Deposit Coverage", "Value": 5},
-  {"Category": "Concentration Risk", "Value": 9},
-  {"Category": "Margin Quality", "Value": 8},
-  {"Category": "Sector Risk", "Value": 2}
+  {Category: "Payment History", Value: 8},
+  {Category: "Deposit Coverage", Value: 5},
+  {Category: "Concentration Risk", Value: 9},
+  {Category: "Margin Quality", Value: 8},
+  {Category: "Sector Risk", Value: 2}
 ];
 
-const categories = dataPoints.map(d => d.Category);
-const values = dataPoints.map(d => d.Value);
+const N = dataPoints.length;
+const maxRadius = 1; // scale to 1 for easier positioning
 
-// Close the loop for radar chart
-const radarValues = [...values, values[0]];
-const radarCategories = [...categories, categories[0]];
+// Convert values to normalized radius (0 to 1)
+const values = dataPoints.map(d => d.Value / 10 * maxRadius);
 
-// Radar data overlay
+// Compute pentagon coordinates
+const angles = Array.from({length: N}, (_, i) => (2 * Math.PI * i / N) - Math.PI/2);
+const xs = values.map((v,i) => v * Math.cos(angles[i]));
+const ys = values.map((v,i) => v * Math.sin(angles[i]));
+
+// Close the polygon
+xs.push(xs[0]);
+ys.push(ys[0]);
+
+// Labels positions
+const labelXs = values.map((v,i) => 1.05 * Math.cos(angles[i]));
+const labelYs = values.map((v,i) => 1.05 * Math.sin(angles[i]));
+const labels = dataPoints.map(d => d.Category);
+
+// Radar polygon trace
 const radarTrace = {
-  type: 'scatterpolar',
-  r: radarValues,
-  theta: radarCategories,
+  x: xs,
+  y: ys,
   fill: 'toself',
+  fillcolor: 'rgba(255,127,14,0.5)',
   line: { color: '#ff7f0e', width: 2 },
-  hoverinfo: 'skip',
-  name: 'Risk'
+  type: 'scatter',
+  hoverinfo: 'skip'
 };
 
-// Labels inside chart
+// Labels trace
 const labelTrace = {
-  type: 'scatterpolar',
-  r: values.map(v => v + 1), // slightly outside data points
-  theta: categories,
+  x: labelXs,
+  y: labelYs,
+  text: labels,
   mode: 'text',
-  text: categories,
-  textposition: 'middle center',
-  textfont: { size: 12, color: '#333' },
+  textfont: { size: 14, color: '#333' },
   hoverinfo: 'skip',
-  showlegend: false
+  type: 'scatter'
 };
 
 const layout = {
-  polar: {
-    radialaxis: { visible: false, range: [0, 10] },  // hide circles
-    angularaxis: { showticklabels: false },          // hide default labels
-    bgcolor: 'rgba(0,0,0,0)'
-  },
-  showlegend: false,
-  margin: { t: 20, b: 20, l: 20, r: 20 }
+  xaxis: { visible: false, range: [-1.2,1.2] },
+  yaxis: { visible: false, range: [-1.2,1.2] },
+  margin: { t: 10, b: 10, l: 10, r: 10 },
+  autosize: true,
+  plot_bgcolor: 'rgba(0,0,0,0)',
+  paper_bgcolor: 'rgba(0,0,0,0)',
+  showlegend: false
 };
 
 const config = { displayModeBar: false, responsive: true };
