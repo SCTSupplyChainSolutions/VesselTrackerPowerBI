@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- Include Plotly.js -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
   html, body {
@@ -44,8 +43,8 @@
     r: values,
     theta: categories,
     fill: 'toself',
-    line: { color: '#ff7f0e' }, // orange line
-    hoverinfo: 'skip' // removes tooltips
+    line: { color: '#ff7f0e' }, // orange
+    hoverinfo: 'skip' // disable tooltips
   };
 
   const layout = {
@@ -60,11 +59,16 @@
   };
 
   const config = {
-    displayModeBar: false, // removes toolbar
-    responsive: true
+    displayModeBar: false,
+    responsive: true // scales automatically with container / iframe
   };
 
   Plotly.newPlot('radarChart', [trace], layout, config);
+
+  // Optional: resize dynamically if parent iframe changes size
+  window.addEventListener('resize', () => {
+    Plotly.Plots.resize('radarChart');
+  });
 </script>
 </body>
 </html>
