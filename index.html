@@ -40,7 +40,7 @@ function drawRadar(step = animationSteps) {
     const canvas = document.getElementById("radarCanvas");
     const ctx = canvas.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
-
+    
     // High-DPI scaling
     canvas.width = canvas.clientWidth * dpr;
     canvas.height = canvas.clientHeight * dpr;
@@ -53,6 +53,13 @@ function drawRadar(step = animationSteps) {
     const maxRadius = Math.min(W, H) * 0.40;
     const angleStep = (Math.PI * 2) / data.length;
 
+    // Top-left label
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.font = `${Math.round(W * 0.03)}px Montserrat`; // responsive font size
+    ctx.fillStyle = "#333"; // color
+    ctx.fillText("Risk Assessment", 10, 10); // 10px padding from top-left
+    
     ctx.clearRect(0, 0, W, H);
     ctx.lineWidth = 1;
     ctx.strokeStyle = "#ddd";
