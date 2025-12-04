@@ -4,142 +4,82 @@
 <meta charset="UTF-8">
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <style>
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  font-family: 'Montserrat', sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #ffffff; /* page background white */
-}
-#radarChart {
-  width: 100%;
-  height: 100%;
-}
+  html, body {
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    background-color: #ffffff;
+    font-family: 'Montserrat', sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
+  #radarChart {
+    width:100%;
+    height:100%;
+  }
 </style>
 </head>
 <body>
 <div id="radarChart"></div>
 <script>
-// ----- CONFIG -----
-const categories = [
-  "Concentration Risk", 
-  "Payment History", 
-  "Sector Diversity", 
-  "Margin Quality", 
-  "Deposit Coverage"
-];
+  const categories = [
+    "Concentration Risk",
+    "Payment History",
+    "Sector Diversity",
+    "Margin Quality",
+    "Deposit Coverage"
+  ];
+  const values = [9,8,2,8,5];
+  const N = categories.length;
+  const maxValue = 10;
 
-const values = [9, 8, 2, 8, 5]; // scale 0-10
-const N = categories.length;
-const maxValue = 10;
-const levels = 5; // number of concentric pentagons for scale
-const riskLabels = [0, 25, 50, 75, 100];
-
-// ----- HELPER FUNCTIONS -----
-function pentagonCoords(radius){
-  const coords = [];
-  for(let i=0;i<N;i++){
-    const angle = Math.PI/2 - 2*Math.PI*i/N; // upright pentagon
-    coords.push([radius * Math.cos(angle), radius * Math.sin(angle)]);
+  function pentagonCoords(r) {
+    return Array.from({length: N}, (_, i) => {
+      const angle = Math.PI/2 - 2 * Math.PI * i / N;
+      return [r * Math.cos(angle), r * Math.sin(angle)];
+    });
   }
-  return coords;
-}
 
-// Correct aspect ratio
-const aspectScale = 1; // keep square
+  const dataCoords = pentagonCoords(1).map((c,i) => [c[0] * (values[i]/maxValue), c[1] * (values[i]/maxValue)]);
+  dataCoords.push(dataCoords[0]);
 
-// ----- DATA COORDINATES -----
-const dataCoords = pentagonCoords(1).map((c,i)=>{
-  const scale = values[i]/maxValue;
-  return [c[0]*scale*aspectScale, c[1]*scale];
-});
-dataCoords.push(dataCoords[0]); // close polygon
+  const labelCoords = pentagonCoords(1.2);  // increase to 1.2 so labels sit outside
 
-// Labels slightly outside vertices
-const labelCoords = pentagonCoords(1.1).map(c=>[c[0]*aspectScale,c[1]]);
+  const dataTrace = {
+    x: dataCoords.map(c => c[0]),
+    y: dataCoords.map(c => c[1]),
+    fill: 'toself',
+    fillcolor: 'rgba(255,127,14,0.5)',
+    line: { color: '#ff7f0e', width: 2 },
+    mode: 'lines+markers',
+    type: 'scatter',
+    hoverinfo: 'skip'
+  };
 
-// ----- CONCENTRIC PENTAGONS -----
-const scaleTraces = [];
-for(let l=1;l<=levels;l++){
-  const r = l/levels;
-  const coords = pentagonCoords(r).map(c=>[c[0]*aspectScale,c[1]]);
-  coords.push(coords[0]);
-  scaleTraces.push({
-    x: coords.map(c=>c[0]),
-    y: coords.map(c=>c[1]),
-    type:'scatter',
-    mode:'lines',
-    line:{color:'#ddd',width:1},
-    hoverinfo:'skip',
-    showlegend:false
-  });
-}
+  const labelTrace = {
+    x: labelCoords.map(c => c[0]),
+    y: labelCoords.map(c => c[1]),
+    text: categories,
+    mode: 'text',
+    textfont: { size: 14, color: '#333' },
+    type: 'scatter',
+    hoverinfo: 'skip'
+  };
 
-// ----- DATA OVERLAY -----
-const dataTrace = {
-  x: dataCoords.map(c=>c[0]),
-  y: dataCoords.map(c=>c[1]),
-  fill:'toself',
-  fillcolor:'rgba(255,127,14,0.5)',
-  line:{color:'#ff7f0e', width:2},
-  type:'scatter',
-  mode:'lines+markers',
-  marker:{size:6,color:'#ff7f0e'},
-  hoverinfo:'skip'
-};
+  const layout = {
+    xaxis: { visible: false, range: [-1.5, 1.5], fixedrange: true },
+    yaxis: { visible: false, range: [-1.5, 1.5], fixedrange: true },
+    margin: { t: 40, b: 40, l: 60, r: 60 },
+    plot_bgcolor: '#ffffff',
+    paper_bgcolor: '#ffffff',
+    showlegend: false,
+    autosize: true
+  };
 
-// ----- LABELS -----
-const labelTrace = {
-  x: labelCoords.map(c=>c[0]),
-  y: labelCoords.map(c=>c[1]),
-  text: categories,
-  mode:'text',
-  textfont:{size:14,color:'#333'},
-  hoverinfo:'skip',
-  type:'scatter'
-};
-
-// ----- RISK SCALE LABELS -----
-const riskLabelCoords = [];
-for(let i=0;i<levels;i++){
-  const r = (i+1)/levels;
-  riskLabelCoords.push({
-    x: 0, // vertical axis
-    y: r, 
-    text: riskLabels[i],
-    mode:'text',
-    textposition:'middle right',
-    textfont:{size:11,color:'#555'},
-    type:'scatter',
-    hoverinfo:'skip',
-    showlegend:false
-  });
-}
-
-// ----- LAYOUT -----
-const layout = {
-  xaxis:{visible:false,range:[-1.3,1.3],scaleanchor:'y'},
-  yaxis:{visible:false,range:[-1.3,1.3]},
-  margin:{t:30,b:30,l:50,r:50},
-  plot_bgcolor:'#ffffff',
-  paper_bgcolor:'#ffffff',
-  showlegend:false,
-  autosize:true
-};
-
-// ----- PLOT -----
-const config = { displayModeBar:false,responsive:true };
-const chartDiv = document.getElementById('radarChart');
-
-function resizeChart(){ Plotly.Plots.resize(chartDiv); }
-
-Plotly.newPlot(chartDiv,[...scaleTraces,dataTrace,labelTrace,...riskLabelCoords],layout,config);
-window.addEventListener('resize',resizeChart);
-setInterval(resizeChart,100);
+  Plotly.newPlot('radarChart', [dataTrace, labelTrace], layout, {displayModeBar:false, responsive:true});
+  window.addEventListener('resize', () => Plotly.Plots.resize('radarChart'));
 </script>
 </body>
 </html>
