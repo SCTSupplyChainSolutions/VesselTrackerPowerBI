@@ -62,7 +62,7 @@ function drawRadar(step = animationSteps) {
     // ----- TOP-LEFT LABEL -----
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.font = `${Math.round(Math.min(W,H) * 0.06)}px Inter`;
+    ctx.font = `${Math.round(Math.min(W,H) * 0.05)}px Inter`;
     ctx.fillStyle = "#333";
     ctx.fillText("Risk Assessment", 10, 10);
 
@@ -70,7 +70,7 @@ function drawRadar(step = animationSteps) {
     ctx.lineWidth = 1;
     ctx.strokeStyle = "#ddd";
     ctx.fillStyle = "#000";
-    ctx.font = `${Math.round(Math.min(W,H) * 0.04)}px Inter`;
+    ctx.font = `${Math.round(Math.min(W,H) * 0.03)}px Inter`;
 
     for (let i = 0; i < rings; i++) {
         const radius = (maxRadius / (rings - 1)) * i;
@@ -105,8 +105,8 @@ function drawRadar(step = animationSteps) {
         ctx.stroke();
 
         // Category label
-        const lx = centerX + (maxRadius + W * 0.05) * Math.cos(angle);
-        const ly = centerY + (maxRadius + H * 0.05) * Math.sin(angle);
+        const lx = centerX + (maxRadius + W * 0.045) * Math.cos(angle);
+        const ly = centerY + (maxRadius + H * 0.045) * Math.sin(angle);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(data[i].category, lx, ly);
