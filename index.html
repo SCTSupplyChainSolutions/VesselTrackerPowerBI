@@ -41,7 +41,7 @@ const topLeftLabel = "Risk Assessment";
 const topLeftLetterSpacing = 2; // pixels between letters
 
 // ----- HELPER FUNCTION: Draw text with letter spacing -----
-function drawTextWithSpacing(ctx, text, x, y, spacing = 2) {
+function drawTextWithSpacing(ctx, text, x, y, spacing = 1) {
     for (let i = 0; i < text.length; i++) {
         ctx.fillText(text[i], Math.round(x), Math.round(y));
         x += ctx.measureText(text[i]).width + spacing;
@@ -72,7 +72,7 @@ function drawRadar(step = animationSteps) {
     // ----- TOP-LEFT LABEL WITH LETTER SPACING -----
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.font = `500 ${Math.round(Math.min(W,H) * 0.04)}px Inter`;
+    ctx.font = `600 ${Math.round(Math.min(W,H) * 0.04)}px Inter`;
     ctx.fillStyle = "#333";
     drawTextWithSpacing(ctx, topLeftLabel, 15, 15, topLeftLetterSpacing);
 
