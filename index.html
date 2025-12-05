@@ -62,9 +62,9 @@ function drawRadar(step = animationSteps) {
     // ----- TOP-LEFT LABEL -----
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.font = `500 ${Math.round(Math.min(W,H) * 0.04)}px Inter`;
+    ctx.font = `600 ${Math.round(Math.min(W,H) * 0.04)}px Inter`;
     ctx.fillStyle = "#333";
-    ctx.globalAlpha = 0.98; // slightly reduce opacity
+    ctx.globalAlpha = 0.95; // slightly reduce opacity
     ctx.fillText("Risk Assessment", 15, 15);
     ctx.globalAlpha = 1; // reset for other text
 
