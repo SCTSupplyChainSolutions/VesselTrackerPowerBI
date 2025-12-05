@@ -37,6 +37,16 @@ const data = [
 const riskLabels = [0, 25, 50, 75, 100];
 const rings = 5;
 const animationSteps = 60;
+const topLeftLabel = "Risk Assessment";
+const topLeftLetterSpacing = 2; // pixels between letters
+
+// ----- HELPER FUNCTION: Draw text with letter spacing -----
+function drawTextWithSpacing(ctx, text, x, y, spacing = 2) {
+    for (let i = 0; i < text.length; i++) {
+        ctx.fillText(text[i], Math.round(x), Math.round(y));
+        x += ctx.measureText(text[i]).width + spacing;
+    }
+}
 
 // ----- DRAW FUNCTION -----
 function drawRadar(step = animationSteps) {
@@ -59,12 +69,12 @@ function drawRadar(step = animationSteps) {
 
     ctx.clearRect(0, 0, W, H);
 
-    // ----- TOP-LEFT LABEL -----
+    // ----- TOP-LEFT LABEL WITH LETTER SPACING -----
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.font = `600 ${Math.round(Math.min(W,H) * 0.04)}px Inter`;
+    ctx.font = `500 ${Math.round(Math.min(W,H) * 0.04)}px Inter`;
     ctx.fillStyle = "#333";
-    ctx.fillText("Risk Assessment", Math.round(15), Math.round(15));
+    drawTextWithSpacing(ctx, topLeftLabel, 15, 15, topLeftLetterSpacing);
 
     // ----- DRAW RINGS + RISK LABELS -----
     ctx.lineWidth = 1;
