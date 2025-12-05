@@ -97,8 +97,8 @@ function drawRadar(step = animationSteps) {
 
         // Risk label
         ctx.textAlign = "center";
-        ctx.textBaseline = "bottom";
-        ctx.fillText(riskLabels[i], Math.round(centerX), Math.round(centerY - radius - 8));
+        ctx.textBaseline = "middle";
+        ctx.fillText(riskLabels[i], Math.round(centerX), Math.round(centerY - radius));
     }
 
     // ----- AXES + CATEGORY LABELS -----
